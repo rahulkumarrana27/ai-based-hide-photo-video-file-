@@ -1,0 +1,832 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Private Media Vault</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:linear-gradient(135deg,#080b14,#111827,#020617);
+    color:white;
+}
+
+/* LOCK SCREEN */
+#lockScreen{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.lockBox{
+    width:100%;
+    max-width:400px;
+    background:rgba(20,25,40,.95);
+    padding:35px;
+    border-radius:25px;
+    text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,.5);
+}
+
+.lockIcon{
+    font-size:60px;
+    margin-bottom:15px;
+}
+
+.lockBox h1{
+    margin-bottom:10px;
+}
+
+.lockBox p{
+    color:#9ca3af;
+    margin-bottom:25px;
+}
+
+#pinInput{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:12px;
+    background:#0f172a;
+    color:white;
+    text-align:center;
+    font-size:22px;
+    letter-spacing:8px;
+    outline:none;
+    margin-bottom:15px;
+}
+
+.unlockBtn{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(135deg,#7c3aed,#2563eb);
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+.unlockBtn:hover{
+    opacity:.9;
+}
+
+.error{
+    color:#f87171;
+    margin-top:12px;
+    min-height:20px;
+}
+
+/* MAIN */
+#vault{
+    display:none;
+    min-height:100vh;
+}
+
+header{
+    padding:20px;
+    background:rgba(15,23,42,.9);
+    border-bottom:1px solid rgba(255,255,255,.08);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    flex-wrap:wrap;
+}
+
+.logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.logoIcon{
+    font-size:32px;
+}
+
+.logo h1{
+    font-size:22px;
+}
+
+.logo span{
+    color:#9ca3af;
+    font-size:12px;
+}
+
+.lockBtn{
+    background:#ef4444;
+    border:none;
+    color:white;
+    padding:10px 15px;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:25px;
+}
+
+/* TOP CONTROLS */
+.topControls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-bottom:20px;
+}
+
+.addButton{
+    border:none;
+    color:white;
+    padding:13px 17px;
+    border-radius:12px;
+    cursor:pointer;
+    font-size:14px;
+}
+
+.photoButton{
+    background:#7c3aed;
+}
+
+.videoButton{
+    background:#2563eb;
+}
+
+.fileButton{
+    background:#0891b2;
+}
+
+.appButton{
+    background:#059669;
+}
+
+.hiddenButton{
+    background:#475569;
+}
+
+.searchBox{
+    flex:1;
+    min-width:200px;
+    padding:13px 15px;
+    border:none;
+    border-radius:12px;
+    background:#111827;
+    color:white;
+    outline:none;
+}
+
+/* STATS */
+.stats{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:15px;
+    margin-bottom:25px;
+}
+
+.stat{
+    background:rgba(15,23,42,.8);
+    border:1px solid rgba(255,255,255,.06);
+    padding:18px;
+    border-radius:16px;
+}
+
+.statTitle{
+    color:#9ca3af;
+    font-size:13px;
+    margin-bottom:7px;
+}
+
+.statValue{
+    font-size:25px;
+    font-weight:bold;
+}
+
+/* GRID */
+#mediaGrid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    gap:18px;
+}
+
+.empty{
+    text-align:center;
+    padding:80px 20px;
+    color:#9ca3af;
+    grid-column:1/-1;
+}
+
+.card{
+    background:#111827;
+    border:1px solid rgba(255,255,255,.07);
+    border-radius:18px;
+    overflow:hidden;
+    transition:.2s;
+}
+
+.card:hover{
+    transform:translateY(-4px);
+    border-color:#6366f1;
+}
+
+.preview{
+    height:180px;
+    background:#020617;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    overflow:hidden;
+    position:relative;
+}
+
+.preview img,
+.preview video{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.filePreview{
+    font-size:65px;
+}
+
+.appPreview{
+    font-size:65px;
+}
+
+.cardInfo{
+    padding:15px;
+}
+
+.cardName{
+    font-weight:bold;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+    margin-bottom:8px;
+}
+
+.cardType{
+    color:#9ca3af;
+    font-size:12px;
+    margin-bottom:12px;
+}
+
+.cardButtons{
+    display:flex;
+    gap:7px;
+    flex-wrap:wrap;
+}
+
+.cardButtons button{
+    border:none;
+    padding:8px 10px;
+    border-radius:8px;
+    cursor:pointer;
+    color:white;
+    font-size:12px;
+}
+
+.viewBtn{
+    background:#2563eb;
+}
+
+.hideBtn{
+    background:#7c3aed;
+}
+
+.deleteBtn{
+    background:#dc2626;
+}
+
+.downloadBtn{
+    background:#059669;
+}
+
+.hiddenBadge{
+    position:absolute;
+    top:10px;
+    right:10px;
+    background:#7c3aed;
+    padding:5px 9px;
+    border-radius:8px;
+    font-size:11px;
+}
+
+/* MODAL */
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.85);
+    z-index:1000;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.modalContent{
+    max-width:900px;
+    max-height:90vh;
+    width:100%;
+    position:relative;
+    text-align:center;
+}
+
+.modalContent img,
+.modalContent video{
+    max-width:100%;
+    max-height:80vh;
+    border-radius:15px;
+}
+
+.closeModal{
+    position:absolute;
+    top:-45px;
+    right:0;
+    background:#ef4444;
+    border:none;
+    color:white;
+    padding:10px 15px;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+/* MOBILE */
+@media(max-width:600px){
+    .container{
+        padding:15px;
+    }
+
+    header{
+        padding:15px;
+    }
+
+    #mediaGrid{
+        grid-template-columns:repeat(2,1fr);
+        gap:10px;
+    }
+
+    .preview{
+        height:130px;
+    }
+
+    .cardInfo{
+        padding:10px;
+    }
+
+    .cardButtons button{
+        font-size:11px;
+        padding:7px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOCK SCREEN -->
+<div id="lockScreen">
+
+    <div class="lockBox">
+
+        <div class="lockIcon">🔐</div>
+
+        <h1>Private Media Vault</h1>
+
+        <p>Enter your PIN to open your private vault.</p>
+
+        <input
+            type="password"
+            id="pinInput"
+            maxlength="6"
+            placeholder="••••"
+        >
+
+        <button class="unlockBtn" onclick="unlockVault()">
+            🔓 Unlock Vault
+        </button>
+
+        <div class="error" id="errorMessage"></div>
+
+    </div>
+
+</div>
+
+
+<!-- VAULT -->
+<div id="vault">
+
+<header>
+
+    <div class="logo">
+
+        <div class="logoIcon">🔐</div>
+
+        <div>
+            <h1>Private Vault</h1>
+            <span>Photos • Videos • Files • Apps</span>
+        </div>
+
+    </div>
+
+    <button class="lockBtn" onclick="lockVault()">
+        🔒 Lock
+    </button>
+
+</header>
+
+
+<div class="container">
+
+    <!-- CONTROLS -->
+
+    <div class="topControls">
+
+        <button
+            class="addButton photoButton"
+            onclick="document.getElementById('photoInput').click()">
+            🖼️ Add Photos
+        </button>
+
+        <button
+            class="addButton videoButton"
+            onclick="document.getElementById('videoInput').click()">
+            🎥 Add Videos
+        </button>
+
+        <button
+            class="addButton fileButton"
+            onclick="document.getElementById('fileInput').click()">
+            📁 Add Files
+        </button>
+
+        <!-- DIRECT APP FILE PICKER -->
+        <button
+            class="addButton appButton"
+            onclick="document.getElementById('appInput').click()">
+            📱 Add App
+        </button>
+
+        <button
+            class="addButton hiddenButton"
+            onclick="toggleHidden()">
+            🔒 Hidden Apps
+        </button>
+
+        <input
+            class="searchBox"
+            type="text"
+            id="searchInput"
+            placeholder="🔎 Search vault..."
+            oninput="displayItems()"
+        >
+
+    </div>
+
+
+    <!-- HIDDEN FILE INPUTS -->
+
+    <input
+        type="file"
+        id="photoInput"
+        accept="image/*"
+        multiple
+        hidden
+        onchange="uploadPhotos(event)"
+    >
+
+    <input
+        type="file"
+        id="videoInput"
+        accept="video/*"
+        multiple
+        hidden
+        onchange="uploadVideos(event)"
+    >
+
+    <input
+        type="file"
+        id="fileInput"
+        multiple
+        hidden
+        onchange="uploadFiles(event)"
+    >
+
+    <!--
+        This opens the phone/laptop file picker directly.
+
+        On Android, choose an APK file if you have one.
+        On laptop, choose an APK file from File Explorer.
+    -->
+    <input
+        type="file"
+        id="appInput"
+        accept=".apk,application/vnd.android.package-archive"
+        multiple
+        hidden
+        onchange="uploadApps(event)"
+    >
+
+
+    <!-- STATS -->
+
+    <div class="stats">
+
+        <div class="stat">
+            <div class="statTitle">Total Items</div>
+            <div class="statValue" id="totalCount">0</div>
+        </div>
+
+        <div class="stat">
+            <div class="statTitle">Photos</div>
+            <div class="statValue" id="photoCount">0</div>
+        </div>
+
+        <div class="stat">
+            <div class="statTitle">Videos</div>
+            <div class="statValue" id="videoCount">0</div>
+        </div>
+
+        <div class="stat">
+            <div class="statTitle">Files</div>
+            <div class="statValue" id="fileCount">0</div>
+        </div>
+
+        <div class="stat">
+            <div class="statTitle">Apps</div>
+            <div class="statValue" id="appCount">0</div>
+        </div>
+
+    </div>
+
+
+    <!-- MEDIA -->
+
+    <div id="mediaGrid"></div>
+
+</div>
+
+</div>
+
+
+<!-- VIEW MODAL -->
+
+<div class="modal" id="viewModal">
+
+    <div class="modalContent">
+
+        <button
+            class="closeModal"
+            onclick="closeModal()">
+            ✕ Close
+        </button>
+
+        <div id="modalContent"></div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================================
+   VAULT DATA
+========================================= */
+
+let items = JSON.parse(
+    localStorage.getItem("vaultItems") || "[]"
+);
+
+let showHiddenOnly = false;
+
+
+/* =========================================
+   PIN
+========================================= */
+
+const correctPIN = "1234";
+
+
+function unlockVault(){
+
+    const pin =
+        document.getElementById("pinInput").value;
+
+    const error =
+        document.getElementById("errorMessage");
+
+    if(pin === correctPIN){
+
+        document.getElementById("lockScreen").style.display="none";
+
+        document.getElementById("vault").style.display="block";
+
+        error.textContent="";
+
+        displayItems();
+
+    }else{
+
+        error.textContent="❌ Wrong PIN";
+
+    }
+
+}
+
+
+function lockVault(){
+
+    document.getElementById("vault").style.display="none";
+
+    document.getElementById("lockScreen").style.display="flex";
+
+    document.getElementById("pinInput").value="";
+
+}
+
+
+/* =========================================
+   SAVE DATA
+========================================= */
+
+function saveItems(){
+
+    localStorage.setItem(
+        "vaultItems",
+        JSON.stringify(items)
+    );
+
+}
+
+
+/* =========================================
+   PHOTO UPLOAD
+========================================= */
+
+function uploadPhotos(event){
+
+    const files =
+        Array.from(event.target.files);
+
+    files.forEach(file=>{
+
+        const reader = new FileReader();
+
+        reader.onload = function(e){
+
+            items.push({
+
+                id:Date.now()+Math.random(),
+
+                type:"photo",
+
+                name:file.name,
+
+                data:e.target.result,
+
+                size:file.size,
+
+                hidden:false
+
+            });
+
+            saveItems();
+
+            displayItems();
+
+        };
+
+        reader.readAsDataURL(file);
+
+    });
+
+    event.target.value="";
+
+}
+
+
+/* =========================================
+   VIDEO UPLOAD
+========================================= */
+
+function uploadVideos(event){
+
+    const files =
+        Array.from(event.target.files);
+
+    files.forEach(file=>{
+
+        const reader = new FileReader();
+
+        reader.onload = function(e){
+
+            items.push({
+
+                id:Date.now()+Math.random(),
+
+                type:"video",
+
+                name:file.name,
+
+                data:e.target.result,
+
+                size:file.size,
+
+                hidden:false
+
+            });
+
+            saveItems();
+
+            displayItems();
+
+        };
+
+        reader.readAsDataURL(file);
+
+    });
+
+    event.target.value="";
+
+}
+
+
+/* =========================================
+   GENERAL FILE UPLOAD
+========================================= */
+
+function uploadFiles(event){
+
+    const files =
+        Array.from(event.target.files);
+
+    files.forEach(file=>{
+
+        const reader = new FileReader();
+
+        reader.onload = function(e){
+
+            items.push({
+
+                id:Date.now()+Math.random(),
+
+                type:"file",
+
+                name:file.name,
+
+                data:e.target.result,
+
+                fileType:file.type,
+
+                size:file.size,
+
+                hidden:false
+
+            });
+
+            saveItems();
+
+            displayItems();
+
+        };
+
+        reader.readAsDataURL(file);
+
+    });
+
+    event.target.value="";
+
+}
+
+
+/* =========================================
+   APP / APK UPLOAD
+========================================= */
+
+function uploadApps(event){
+
+    const files =
+        Array.from(event.target.files);
+
+    if(files.length === 0){
+        return;
+    }
+
+    files.forEach(file=>{
+
+        /*
+           The APK is read
+```
